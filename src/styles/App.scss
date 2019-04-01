@@ -1,4 +1,13 @@
 /* Base Application Styles */
+@font-face {
+  font-family: "icons-turn-arrow";
+  src: url('../fonts/icons/turn-arrow.eot');
+  src: url('../fonts/icons/turn-arrow.eot') format('embedded-opentype'),
+  url('../fonts/icons/turn-arrow.woff') format('woff'),
+  url('../fonts/icons/turn-arrow.ttf') format('truetype'),
+  url('../fonts/icons/turn-arrow.svg') format('svg');
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -31,6 +40,8 @@ html, body {
   overflow: hidden;
   background-color: #ddd;
 
+  perspective: 1800px;
+
   @at-root {
     .img-figure {
       position: absolute;
@@ -39,16 +50,17 @@ html, body {
       height: 380px;
       margin: 0;
       padding: 40px;
+
       background-color: #fff;
 
       box-sizing: border-box;
-
       cursor: pointer;
-
+      transform-origin: 0 50% 0;
       transform-style: preserve-3d ;
+      transition: transform .6s ease-in-out, left .6s ease-in-out, top .6s ease-in-out;
 
       &.is-inverse {
-        transform: rotateY(180deg);
+        transform: translate(320px) rotateY(180deg);
       }
       img {
         width: 280px;
@@ -62,7 +74,7 @@ html, body {
         margin: 20px 0 0 0;
 
         color: #a7a0a2;
-        font-size: 14px;
+        font-size: 16px;
       }
 
       .img-back {
@@ -74,6 +86,21 @@ html, body {
         height: 100%;
         padding: 50px 40px;
         overflow: auto;
+
+        color: #a7a0a2;
+        font-size: 22px;
+        line-height: 1.25;
+        text-align: left;
+
+        background-color: #fff;
+
+        box-sizing: border-box;
+        transform: rotateY(180deg) translateZ(1px);
+        backface-visibility: hidden;
+
+        p {
+          margin: 0;
+        }
       }
     }
   }
@@ -89,5 +116,50 @@ html, body {
   z-index: 101;
 
   text-align: center;
+
+  @at-root {
+    .controller-unit {
+      display: inline-block;
+      margin: 0 5px;
+      width: 30px;
+      height: 30px;
+
+      text-align: center;
+      vertical-align: middle;
+
+      cursor: pointer;
+      background-color: #aaa;
+      border-radius: 50%;
+
+      transform: scale(.5);
+      transition: transform .6s ease-in-out, background-color .3s;
+
+      &.is-center {
+        background-color: #888;
+
+        transform: scale(1);
+
+        &::after {
+          font-family: "icons-turn-arrow" !important;
+          font-size: 60%;
+          color: #fff;
+          line-height: 30px;
+
+          content:"\e65a";  /*html中unicode 16进制字符前要加&#x, css中前面加\, js中是加\u.*/
+
+          -webkit-font-smoothing: antialiased;    /*字体渲染灰阶平滑*/
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+        &.is-inverse {
+          background-color: #555;
+
+          transform: rotateY(180deg);
+        }
+
+      }
+
+    }
+  }
 }
 /* controller -- end */

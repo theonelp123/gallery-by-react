@@ -30,7 +30,11 @@ class ImgFigure extends React.Component {
   * imgFigure的点击处理函数
   * */
   handleClick(e) {
-    this.props.inverse();
+    if(this.props.arrange.isCentere) {
+      this.props.inverse();
+    } else {
+      this.props.center();
+    }
     
     e.stopPropagation();
     e.preventDefault();
@@ -47,9 +51,13 @@ class ImgFigure extends React.Component {
     
     //如果图片的旋转角度有值并且不为0， 添加旋转角度
     if(this.props.arrange.rotate) {
-      (['-moz-', '-ms-', '-webkit-', '']).forEach(function (value) {
-        styleObj[value + 'transform'] = 'rotate(' + this.props.arrange.rotate + 'deg)'
+      (['MozTransform', 'msTransform', 'WebkitTransform', '']).forEach(function (value) {
+        styleObj[value] = 'rotate(' + this.props.arrange.rotate + 'deg)'
       }.bind(this))
+    }
+    
+    if(this.props.arrange.isCentere) {
+      styleObj.zIndex = 11;
     }
     
     var imgFigureClassName = 'img-figure';
@@ -72,6 +80,39 @@ class ImgFigure extends React.Component {
   }
 }
 
+// 控制组件
+class ControllerUnit extends React.Component {
+  handleClick(e) {
+    // 如果点击的是当前正在选中态的按钮则翻转图片，否则将图片居中
+    if(this.props.arrange.isCentere) {
+      this.props.inverse()
+    } else {
+      this.props.center();
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  render() {
+    let controllerUnitClassName = 'controller-unit';
+    
+    // 如果是居中的图片，显示按钮的添加居中态
+    if(this.props.arrange.isCentere) {
+      controllerUnitClassName += ' is-center';
+  
+      // 如果同时是翻转的图片，显示按钮的翻转态
+      if(this.props.arrange.isInverse) {
+        controllerUnitClassName += ' is-inverse'
+      }
+    }
+    
+    return (
+      <span className={controllerUnitClassName} onClick={this.handleClick.bind(this)} ></span>
+    )
+  }
+}
+
 
 class AppComponent extends React.Component {
   state = {
@@ -83,7 +124,8 @@ class AppComponent extends React.Component {
          top: '0'
        },
        rotate: 0, //旋转角度
-       isInverse:false  // 图片正反面
+       isInverse:false , // 图片正反面
+       isCentere: false
 	   }*/
     ]
   };
@@ -127,18 +169,20 @@ class AppComponent extends React.Component {
       vPosRangeX = vPosRange.x,
       
       imgsArrangeTopArr = [],
-      topImgNum = Math.ceil(Math.random() * 2), // 取一个或者不取
+      topImgNum = Math.floor(Math.random() * 2), // 取一个或者不取
       topImgSpliceIndex = 0,
       
       imgsArrangeCenterArr = imgsArrangeArr.splice(centerIndex, 1);
     
     
     // 首先居中 centerIndex 的图片
-    imgsArrangeCenterArr[0].pos = centerPos;
-    
     // 居中的图片不需要旋转
-    imgsArrangeCenterArr[0].rotate = 0;
-  
+    imgsArrangeCenterArr[0] = {
+      pos: centerPos,
+      rotate: 0,
+      isCentere: true
+    };
+    
     // 取出要布局上侧的图片的状态信息
     topImgSpliceIndex = Math.ceil(Math.random() * (imgsArrangeArr.length - topImgNum) );
     imgsArrangeTopArr = imgsArrangeArr.splice(topImgSpliceIndex, topImgNum);
@@ -150,7 +194,9 @@ class AppComponent extends React.Component {
           top: getRangeRandom(vPosRangeTopY[0], vPosRangeTopY[1]),
           left: getRangeRandom(vPosRangeX[0], vPosRangeX[1])
         },
-        rotate: get30DegRandom()
+        rotate: get30DegRandom(),
+        isInverse: false,
+        isCentere: false
         
       }
     })
@@ -171,7 +217,9 @@ class AppComponent extends React.Component {
           top: getRangeRandom(hPosRangeY[0], hPosRangeY[1]),
           left: getRangeRandom(hPosRangeLORX[0], hPosRangeLORX[1])
         },
-        rotate: get30DegRandom()
+        rotate: get30DegRandom(),
+        isInverse: false,
+        isCentere: false
       }
     }
     
@@ -226,8 +274,8 @@ class AppComponent extends React.Component {
 
     // 拿到一个imageFigure的大小
     let imgFigureDom = this.refs.imgFigure0,
-        imgW = 360,//imgFigureDom.scrollWidth,
-        imgH = 380,//imgFigureDom.scrollHeight,
+        imgW = imgFigureDom.scrollWidth || 360,
+        imgH = imgFigureDom.scrollHeight || 380,
         halfImgW = Math.ceil(imgW / 2),
         halfImgH = Math.ceil(imgH / 2);
 
@@ -256,7 +304,6 @@ class AppComponent extends React.Component {
   }
 
   render() {
-    const { arrange } = this.props;
     let controllerUnits = [],
         imgFigurs = [];
 
@@ -268,10 +315,13 @@ class AppComponent extends React.Component {
             top: '0'
           },
           rotate: 0,
-          isInverse: false
+          isInverse: false,
+          isCentere: false
         }
       }
-      imgFigurs.push(<ImgFigure data={value} ref={'imgFigure' + index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)} />)
+      imgFigurs.push(<ImgFigure key={index} data={value} ref={'imgFigure' + index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)} />);
+      
+      controllerUnits.push(<ControllerUnit key={index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>)
     }.bind(this))
 
     return(
